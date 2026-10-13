@@ -95,13 +95,11 @@ function decorate(vnode) {
   if (config.highlightColor) vnode.attrs.style = { '--menu-control-highlight': config.highlightColor };
 }
 
-// A late initializer, so the navItems extend runs after every other
-// extension has added its items, wherever IndexSidebar is rendered.
-app.initializers.add(
-  'ernestdefoe-menu-control',
-  () => {
-    extend(IndexSidebar.prototype, 'navItems', apply);
-    extend(IndexSidebar.prototype, 'view', decorate);
-  },
-  -100
-);
+app.initializers.add('ernestdefoe-menu-control', () => {
+  extend(IndexSidebar.prototype, 'view', decorate);
+
+  // Registered just before the app mounts — after every extension's
+  // initializer, whatever its priority — so every item already exists when
+  // this runs. (The blog's initializer runs at -100000.)
+  app.beforeMount(() => extend(IndexSidebar.prototype, 'navItems', apply));
+});
