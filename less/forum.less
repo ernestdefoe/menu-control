@@ -1,0 +1,28 @@
+@media @desktop-up {
+  // Follows the page while it scrolls, under the fixed header.
+  .Page-sidebar .IndexPage-nav.MenuControl--sticky {
+    position: sticky;
+    top: calc(@header-height + 20px);
+    max-height: calc(100vh - @header-height - 40px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+}
+
+.sideNav .Dropdown-menu > li.MenuControl-highlight > a {
+  --menu-control-color: var(--menu-control-highlight, var(--primary-color));
+  color: var(--menu-control-color);
+  font-weight: bold;
+  background: color-mix(in srgb, var(--menu-control-color) 14%, transparent);
+  border-radius: var(--border-radius);
+
+  .Button-icon {
+    color: var(--menu-control-color);
+  }
+
+  &:hover,
+  &:focus {
+    background: color-mix(in srgb, var(--menu-control-color) 22%, transparent);
+  }
+}

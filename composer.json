@@ -1,0 +1,71 @@
+{
+    "name": "ernestdefoe/menu-control",
+    "description": "Arrange the forum sidebar: drag to reorder, hide, rename, re-icon and highlight any item, add your own links, and choose which groups see each one.",
+    "keywords": [
+        "flarum",
+        "flarum-extension",
+        "navigation",
+        "sidebar",
+        "menu"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ernest Defoe",
+            "email": "ernestdefoe@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ernestdefoe/menu-control/issues",
+        "source": "https://github.com/ernestdefoe/menu-control"
+    },
+    "require": {
+        "php": "^8.3",
+        "flarum/core": "^2.0"
+    },
+    "conflict": {
+        "resofire/menu-control": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ernestdefoe\\MenuControl\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ernestdefoe\\MenuControl\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Menu Control",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-bars",
+                "backgroundColor": "#3b82f6",
+                "color": "#fff"
+            }
+        }
+    },
+    "require-dev": {
+        "flarum/phpstan": "^2.0",
+        "flarum/testing": "^2.0"
+    },
+    "scripts": {
+        "test": [
+            "@test:integration"
+        ],
+        "test:integration": "phpunit -c tests/phpunit.integration.xml",
+        "test:setup": "@php tests/integration/setup.php",
+        "analyse:phpstan": "phpstan analyse"
+    },
+    "scripts-descriptions": {
+        "test": "Runs all tests.",
+        "test:integration": "Runs all integration tests.",
+        "test:setup": "Sets up a database for use with integration tests. Execute this only once.",
+        "analyse:phpstan": "Run static analysis"
+    },
+    "minimum-stability": "beta",
+    "prefer-stable": true
+}
