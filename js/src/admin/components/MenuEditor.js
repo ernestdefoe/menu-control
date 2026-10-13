@@ -11,7 +11,17 @@ const t = (key, params) => app.translator.trans(`ernestdefoe-menu-control.admin.
 
 // The same rules the server applies before anything reaches the forum.
 const KEY = /^[A-Za-z0-9_.-]{1,64}$/;
-const URL_OK = /^(https?:\/\/\S+|mailto:\S+|\/(?![/\\])\S*)$/i;
+
+export function normalizeUrl(value) {
+  let url = String(value || '')
+    .trim()
+    .replace(/\s+/g, '%20');
+
+  if (/^\/\/[^/\\]/.test(url)) url = 'https:' + url;
+  else if (/^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(:\d+)?([/?#]\S*)?$/i.test(url)) url = 'https://' + url;
+
+  return url.length <= 2000 && /^(https?:\/\/\S+|(mailto|tel):\S+|\/(?![/\\])\S*)$/i.test(url) ? url : null;
+}
 
 function parse(json) {
   try {
@@ -167,7 +177,7 @@ export default class MenuEditor extends Component {
                 <Icon name="fas fa-user-lock" /> {t('badge_groups', { count: item.groups.length })}
               </span>
             ) : null}
-            {isLink && !URL_OK.test((item.url || '').trim()) ? (
+            {isLink && !normalizeUrl(item.url) ? (
               <span className="MenuControl-badge MenuControl-badge--warning">{t('badge_invalid_url')}</span>
             ) : null}
             {missing ? <span className="MenuControl-badge MenuControl-badge--muted">{t('badge_missing')}</span> : null}
@@ -218,7 +228,11 @@ export default class MenuEditor extends Component {
               value={item.url}
               oninput={(e) => this.update(item, { url: e.target.value })}
             />
-            <div className="helpText">{t('url_help')}</div>
+            <div className="helpText">
+              {normalizeUrl(item.url) && normalizeUrl(item.url) !== (item.url || '').trim()
+                ? t('url_normalized', { url: normalizeUrl(item.url) })
+                : t('url_help')}
+            </div>
           </div>
         ) : null}
 
@@ -254,7 +268,10 @@ export default class MenuEditor extends Component {
 
         {isLink ? (
           <div className="MenuControl-field">
-            <Switch state={item.newTab ?? !/^\/(?![/\\])/.test(item.url || '')} onchange={(value) => this.update(item, { newTab: value })}>
+            <Switch
+              state={item.newTab ?? !/^\/(?![/\\])/.test(normalizeUrl(item.url) || '')}
+              onchange={(value) => this.update(item, { newTab: value })}
+            >
               {t('new_tab_label')}
             </Switch>
           </div>

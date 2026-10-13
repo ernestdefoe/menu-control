@@ -108,6 +108,42 @@ class LegacyImport
     }
 
     /**
+     * 1.0.0 refused addresses without a scheme ("example.com/?ref=1"), so its
+     * import dropped those links. Bring back exactly those: a link 1.0.0 did
+     * import and the admin later deleted is left deleted.
+     */
+    public function recoverLinks(): int
+    {
+        $items = MenuConfig::parse($this->settings->get(MenuConfig::ITEMS));
+
+        // Nothing was imported at all — the dropped link was all there was.
+        if ($items === []) {
+            return $this->run() ? 1 : 0;
+        }
+
+        $keys = array_column($items, 'key');
+        $stored = json_decode((string) $this->settings->get(MenuConfig::ITEMS), true);
+        $recovered = 0;
+
+        foreach ($this->json('custom-links', []) as $i => $link) {
+            $url = is_array($link) && is_string($link['url'] ?? null) ? trim($link['url']) : '';
+
+            if (in_array("link-$i", $keys, true) || preg_match('~^(https?://\S+|mailto:\S+|/(?![/\\\\])\S*)$~i', $url) || MenuConfig::url($url) === null) {
+                continue;
+            }
+
+            $stored[] = ['key' => "link-$i", 'label' => $link['label'] ?? null, 'icon' => $link['icon'] ?? null, 'url' => $url];
+            $recovered++;
+        }
+
+        if ($recovered) {
+            $this->settings->set(MenuConfig::ITEMS, json_encode($stored));
+        }
+
+        return $recovered;
+    }
+
+    /**
      * @return array<mixed>
      */
     private function json(string $key, array $default): array

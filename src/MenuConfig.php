@@ -153,18 +153,27 @@ class MenuConfig
         return array_values(array_unique(array_filter(array_map('intval', $value), fn (int $id) => $id > 0)));
     }
 
-    private static function url(mixed $value): ?string
+    public static function url(mixed $value): ?string
     {
         if (! is_string($value)) {
             return null;
         }
 
-        $value = trim($value);
+        // A space pasted inside an address is encoded rather than refused.
+        $value = preg_replace('/\s+/u', '%20', trim($value)) ?? '';
 
-        // http(s), mailto, or a path on this forum. Everything else — a
+        // Addresses pasted without a scheme ("example.com/?ref=1", or the
+        // protocol-relative "//example.com") are other sites, so give them one.
+        if (preg_match('~^//[^/\\\\]~', $value)) {
+            $value = 'https:'.$value;
+        } elseif (preg_match('~^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}(:\d+)?([/?#]\S*)?$~i', $value)) {
+            $value = 'https://'.$value;
+        }
+
+        // http(s), mailto, tel, or a path on this forum. Everything else — a
         // javascript: or data: URL above all — is refused, and so is a path
-        // starting // or /\, which browsers treat as another site.
-        if (strlen($value) > 2000 || ! preg_match('~^(https?://[^\s]+|mailto:[^\s]+|/(?![/\\\\])[^\s]*)$~i', $value)) {
+        // starting /\, which browsers treat as another site.
+        if (strlen($value) > 2000 || ! preg_match('~^(https?://[^\s]+|(mailto|tel):[^\s]+|/(?![/\\\\])[^\s]*)$~i', $value)) {
             return null;
         }
 

@@ -22,11 +22,11 @@ class MenuControlTest extends TestCase
         ['key' => 'staffOnly', 'groups' => [Group::ADMINISTRATOR_ID]],
         ['key' => 'link-docs', 'label' => 'Docs', 'url' => 'https://flarum.org'],
         ['key' => 'link-home', 'label' => 'Home', 'url' => '/'],
+        ['key' => 'link-ref', 'label' => 'Referral', 'url' => 'example.com/?ref=abc'],
         ['key' => 'link-staff', 'label' => 'Staff', 'url' => 'https://secret.example', 'groups' => [Group::ADMINISTRATOR_ID]],
         ['key' => 'link-members', 'label' => 'Members', 'url' => '/members', 'groups' => [Group::MEMBER_ID]],
         ['key' => 'link-js', 'label' => 'Bad', 'url' => 'javascript:alert(1)'],
         ['key' => 'link-data', 'label' => 'Bad', 'url' => 'data:text/html,x'],
-        ['key' => 'link-slashes', 'label' => 'Bad', 'url' => '//evil.example'],
         ['key' => 'link-backslash', 'label' => 'Bad', 'url' => '/\\evil.example'],
         ['key' => 'bad"key'],
         ['key' => 'allDiscussions', 'icon' => 'fa"><script>'],
@@ -72,7 +72,7 @@ class MenuControlTest extends TestCase
     {
         $menu = $this->menuFor(null);
 
-        $this->assertSame(['following', 'tags', 'link-docs', 'link-home', 'allDiscussions'], self::keys($menu));
+        $this->assertSame(['following', 'tags', 'link-docs', 'link-home', 'link-ref', 'allDiscussions'], self::keys($menu));
         $this->assertEqualsCanonicalizing(['badges', 'staffOnly'], $menu['hide']);
 
         // Restricted links are never sent; refused addresses never rendered.
@@ -82,7 +82,7 @@ class MenuControlTest extends TestCase
         $this->assertStringNotContainsString('data:', $body);
         $this->assertStringNotContainsString('evil.example', $body);
 
-        $this->assertNull($menu['items'][4]['icon'], 'an icon that is not a Font Awesome class is dropped');
+        $this->assertNull($menu['items'][5]['icon'], 'an icon that is not a Font Awesome class is dropped');
         $this->assertSame('Watching <b>', $menu['items'][0]['label'], 'labels are text; the browser escapes them');
         $this->assertNull($menu['highlightColor']);
     }
@@ -94,6 +94,22 @@ class MenuControlTest extends TestCase
 
         $this->assertTrue($items['link-docs']['newTab']);
         $this->assertFalse($items['link-home']['newTab']);
+        $this->assertSame('https://example.com/?ref=abc', $items['link-ref']['url'], 'an address without a scheme is a web address');
+        $this->assertTrue($items['link-ref']['newTab']);
+    }
+
+    #[Test]
+    public function addresses_are_normalised_or_refused(): void
+    {
+        $this->assertSame('https://www.amazon.com/dp/B0?tag=x-20', MenuConfig::url('www.amazon.com/dp/B0?tag=x-20'));
+        $this->assertSame('https://cdn.example.com/x', MenuConfig::url('//cdn.example.com/x'));
+        $this->assertSame('https://x.example/a%20b', MenuConfig::url(' https://x.example/a b '));
+        $this->assertSame('tel:+15551234', MenuConfig::url('tel:+15551234'));
+        $this->assertSame('/tags', MenuConfig::url('/tags'));
+
+        foreach (['javascript:alert(1)', 'JavaScript:alert(1)', 'data:text/html,x', '/\\evil.example', 'vbscript:x', 'foo', ''] as $bad) {
+            $this->assertNull(MenuConfig::url($bad), $bad);
+        }
     }
 
     #[Test]
@@ -183,5 +199,42 @@ class MenuControlTest extends TestCase
 
         // It never overwrites a configuration this extension already has.
         $this->assertFalse((new LegacyImport($settings))->run());
+    }
+
+    #[Test]
+    public function links_that_1_0_0_refused_are_recovered_and_nothing_else(): void
+    {
+        $settings = $this->app()->getContainer()->make(SettingsRepositoryInterface::class);
+
+        $this->store('resofire-menu-control.custom-links', json_encode([
+            ['label' => 'Docs', 'url' => 'https://flarum.org'],        // imported, then deleted by the admin
+            ['label' => 'Referral', 'url' => 'example.com/?ref=abc'],  // refused by 1.0.0
+            ['label' => 'Bad', 'url' => 'javascript:alert(1)'],        // still refused
+        ]));
+        // What 1.0.0 left behind after the admin deleted the Docs link.
+        $this->store(MenuConfig::ITEMS, json_encode([['key' => 'allDiscussions'], ['key' => 'tags', 'highlight' => true]]));
+
+        $import = new LegacyImport($settings);
+        $this->assertSame(1, $import->recoverLinks());
+
+        $items = MenuConfig::parse($settings->get(MenuConfig::ITEMS));
+        $this->assertSame(['allDiscussions', 'tags', 'link-1'], array_column($items, 'key'));
+        $this->assertSame('https://example.com/?ref=abc', $items[2]['url']);
+        $this->assertTrue($items[1]['highlight'], 'existing configuration is untouched');
+
+        $this->assertSame(0, $import->recoverLinks(), 'running it again changes nothing');
+    }
+
+    #[Test]
+    public function when_1_0_0_imported_nothing_recovery_runs_the_whole_import(): void
+    {
+        $settings = $this->app()->getContainer()->make(SettingsRepositoryInterface::class);
+
+        $this->store(MenuConfig::ITEMS, '[]');
+        $this->store('resofire-menu-control.order', json_encode(['custom-link-0']));
+        $this->store('resofire-menu-control.custom-links', json_encode([['label' => 'Shop', 'url' => 'shop.example.com/r/42']]));
+
+        $this->assertSame(1, (new LegacyImport($settings))->recoverLinks());
+        $this->assertSame('https://shop.example.com/r/42', MenuConfig::parse($settings->get(MenuConfig::ITEMS))[0]['url']);
     }
 }
