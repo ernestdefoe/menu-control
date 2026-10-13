@@ -63,6 +63,7 @@ The two extensions can't be installed together, because both would rearrange the
 ## Links
 
 - [Packagist](https://packagist.org/packages/ernestdefoe/menu-control)
+- [Discuss thread](https://discuss.flarum.org/d/40063-menu-control-arrange-hide-rename-and-restrict-every-sidebar-item)
 - [GitHub](https://github.com/ernestdefoe/menu-control)
 - [Report an issue](https://github.com/ernestdefoe/menu-control/issues)
 

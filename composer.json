@@ -17,6 +17,7 @@
         }
     ],
     "support": {
+        "forum": "https://discuss.flarum.org/d/40063-menu-control-arrange-hide-rename-and-restrict-every-sidebar-item",
         "issues": "https://github.com/ernestdefoe/menu-control/issues",
         "source": "https://github.com/ernestdefoe/menu-control"
     },
