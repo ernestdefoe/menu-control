@@ -61,7 +61,12 @@ export default function faIcons() {
     }
   }
 
-  cache = { classic: [...classic.values()], brands: [...brands.values()] };
+  // Font Awesome also draws plain digits, letters and symbols (fa-0, fa-a, a
+  // "#"). They are real icons but the least useful to browse, so they follow
+  // the pictograms.
+  const pictogramsFirst = (list) => [...list.values()].sort((a, b) => (a.char.codePointAt(0) < 0x80) - (b.char.codePointAt(0) < 0x80));
+
+  cache = { classic: pictogramsFirst(classic), brands: pictogramsFirst(brands) };
   return cache;
 }
 
@@ -93,7 +98,12 @@ export async function regularIcons() {
 
   const placeholder = pixels('\uf8fe');
 
-  regular = faIcons().classic.filter((icon) => pixels(icon.char).some((value, i) => value !== placeholder[i]));
+  const found = faIcons().classic.filter((icon) => pixels(icon.char).some((value, i) => value !== placeholder[i]));
+
+  // With a Font Awesome Kit or CDN the bundled family is a blank stand-in that
+  // draws nothing, so nothing is found: the remote fonts decide what Regular
+  // covers there, so offer every classic icon.
+  regular = found.length ? found : faIcons().classic;
 
   return regular;
 }

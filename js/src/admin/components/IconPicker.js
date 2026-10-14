@@ -11,6 +11,9 @@ const t = (key, params) => app.translator.trans(`ernestdefoe-menu-control.admin.
 const STYLES = { solid: 'fas', regular: 'far', brands: 'fab' };
 const SHOWN = 240; // enough to browse; searching narrows the rest
 
+// Words a search can contain that name a style, not an icon.
+const STYLE_WORDS = new Set(['fa', 'fas', 'far', 'fab', 'fa-solid', 'fa-regular', 'fa-brands']);
+
 /**
  * A searchable grid of every Font Awesome icon this forum can draw. It only
  * fills the text field beside it, which still takes any class by hand.
@@ -53,10 +56,28 @@ export default class IconPicker extends Component {
     return faIcons().classic;
   }
 
+  matches(icons) {
+    if (!icons) return [];
+
+    // "fas fa-house" and "fa-house" find the house as well as "house" does.
+    const words = this.query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word && !STYLE_WORDS.has(word))
+      .map((word) => word.replace(/^fa-/, ''));
+
+    const found = icons.filter((icon) => words.every((w) => icon.search.includes(w)));
+
+    // Enter picks the first result, so the closest names lead.
+    const query = words.join('-');
+    const rank = (icon) => (icon.name === query ? 0 : icon.name.startsWith(query) ? 1 : 2);
+
+    return query ? found.sort((a, b) => rank(a) - rank(b)) : found;
+  }
+
   view() {
     const all = this.icons();
-    const words = this.query.toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = all ? all.filter((icon) => words.every((w) => icon.search.includes(w))) : [];
+    const matches = this.matches(all);
     const prefix = STYLES[this.style];
 
     return (
@@ -68,6 +89,11 @@ export default class IconPicker extends Component {
             placeholder={t('picker_search')}
             value={this.query}
             oninput={(e) => (this.query = e.target.value)}
+            onkeydown={(e) => {
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              if (matches[0]) this.attrs.onpick(`${prefix} fa-${matches[0].name}`);
+            }}
           />
           <div className="ButtonGroup MenuControl-pickerStyles">
             {Object.keys(STYLES).map((style) => (
