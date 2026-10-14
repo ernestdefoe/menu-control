@@ -260,7 +260,7 @@ export default class MenuEditor extends Component {
               type="text"
               placeholder={isLink ? 'fas fa-link' : found?.icon || 'fas fa-fire'}
               value={item.icon || ''}
-              oninput={(e) => this.update(item, { icon: e.target.value.trim() })}
+              oninput={(e) => this.update(item, { icon: e.target.value })}
             />
           </div>
           <div className="helpText">{t('icon_help')}</div>
@@ -310,7 +310,9 @@ export default class MenuEditor extends Component {
     Object.assign(item, changes);
 
     // Keep stored entries small: drop anything that is back at its default.
-    ['label', 'icon'].forEach((field) => item[field] === '' && delete item[field]);
+    // Never trim while typing — the space in "fas fa-fire" would vanish as it
+    // is typed. The server trims on the way out.
+    ['label', 'icon'].forEach((field) => typeof item[field] === 'string' && !item[field].trim() && delete item[field]);
     ['hidden', 'highlight'].forEach((field) => item[field] === false && delete item[field]);
     if (item.groups && !item.groups.length) delete item.groups;
 
