@@ -11,13 +11,14 @@ A [Flarum 2](https://flarum.org) extension that gives you full control of the fo
 - **Drag to reorder.** Every sidebar item is listed in the admin panel. Drag one into place and save.
 - **Hide without deleting.** The eye icon hides an item and shows it again later. Nothing is lost.
 - **Rename any item.** Give "All Discussions" or any extension's link your own label, with no language pack needed.
-- **Change any icon.** Use any Font Awesome class, and see a live preview as you type.
+- **Change any icon.** Pick one from a searchable grid of every Font Awesome icon your forum can show (solid, regular and brands), or type any Font Awesome class yourself.
 - **Highlight items.** Make an item stand out in a colour you choose. It defaults to your forum's primary colour.
-- **Custom links.** Add links to pages on your forum or to other sites. You can reorder, rename, highlight and restrict them like any other item. External links open in a new tab by default, and you can change that for each link.
+- **Custom links.** Add links to pages on your forum or to other sites. A plain address like `example.com/page` works too. You can reorder, rename, highlight and restrict them like any other item. External links open in a new tab by default, and you can change that for each link.
 - **Choose who sees each item.** Show an item only to certain groups: guests, members, staff, or any group you've made. Restricted links are never sent to people who can't see them.
 - **Tags first.** You can put the tag list above the menu items.
 - **Sticky sidebar.** The sidebar, including the Start a Discussion button, can stay in view as people scroll. Desktop only.
 - **Works wherever the sidebar is shown,** including the tags page and other extensions' pages that reuse it.
+- **Preview before you save.** A live sidebar preview updates with every change. Choose **View as** to see it as guests, members or any group sees it.
 - **Picks up new items by itself.** The admin page reads your real sidebar, so items from extensions you install later appear without any setup.
 
 ![The admin panel](https://raw.githubusercontent.com/ernestdefoe/menu-control/main/.github/screenshots/admin-editor.png)

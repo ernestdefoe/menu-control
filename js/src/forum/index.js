@@ -22,7 +22,7 @@ function report(items) {
     .filter((key) => !isTagEntry(key))
     .map((key) => {
       const vnode = items.get(key);
-      return { key, label: extractText(vnode?.children ?? '').trim() || key, icon: vnode?.attrs?.icon || null };
+      return { key, label: extractText(vnode?.children ?? '').trim(), icon: vnode?.attrs?.icon || null };
     });
 
   window.parent.postMessage({ type: SCAN_MESSAGE, items: found }, window.location.origin);

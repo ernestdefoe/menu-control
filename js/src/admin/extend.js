@@ -7,7 +7,13 @@ const t = (key) => app.translator.trans(`ernestdefoe-menu-control.admin.${key}`)
 export default [
   new Admin()
     .customSetting(function () {
-      return <MenuEditor stream={this.setting('ernestdefoe-menu-control.items', '[]')} />;
+      return (
+        <MenuEditor
+          stream={this.setting('ernestdefoe-menu-control.items', '[]')}
+          flip={this.setting('ernestdefoe-menu-control.flip')}
+          color={this.setting('ernestdefoe-menu-control.highlight_color')}
+        />
+      );
     }, 100)
     .setting(
       () => ({

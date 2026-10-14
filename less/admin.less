@@ -19,11 +19,18 @@
   margin: 6px 0;
 }
 
+.MenuControl-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 640px) 240px;
+  gap: 30px;
+  align-items: start;
+  margin-top: 10px;
+}
+
 .MenuControl-list {
   list-style: none;
-  margin: 10px 0;
+  margin: 0 0 10px;
   padding: 0;
-  max-width: 640px;
 }
 
 .MenuControl-item {
@@ -176,6 +183,178 @@
     gap: 6px;
     font-weight: normal;
     margin: 0;
+  }
+}
+
+.MenuControl-pickerToggle {
+  flex-shrink: 0;
+}
+
+.MenuControl-picker {
+  margin-top: 8px;
+  max-width: 420px;
+  border: 1px solid var(--control-bg);
+  border-radius: var(--border-radius);
+  background: var(--body-bg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  padding: 10px;
+}
+
+.MenuControl-pickerBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .FormControl {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.MenuControl-pickerStyles {
+  display: flex;
+  flex-shrink: 0;
+
+  .Button {
+    padding: 8px 10px;
+  }
+}
+
+.MenuControl-pickerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 4px;
+  max-height: 232px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.MenuControl-pickerIcon {
+  height: 38px;
+  border: 0;
+  border-radius: var(--border-radius);
+  background: none;
+  color: var(--text-color);
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--control-bg);
+  }
+
+  &.active {
+    background: var(--primary-color);
+    color: var(--body-bg);
+  }
+}
+
+.MenuControl-pickerFoot {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted-color);
+}
+
+.MenuControl-preview {
+  position: sticky;
+  top: 70px;
+  padding: 14px;
+  border: 1px solid var(--control-bg);
+  border-radius: var(--border-radius);
+  background: var(--body-bg);
+}
+
+.MenuControl-previewHead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.MenuControl-previewTitle {
+  font-weight: bold;
+}
+
+.MenuControl-previewViewer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted-color);
+
+  .Select,
+  .Select-input {
+    width: 100%;
+  }
+}
+
+.MenuControl-previewStart {
+  background: var(--primary-color);
+  color: var(--body-bg);
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.MenuControl-previewList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.MenuControl-previewItem,
+.MenuControl-previewTag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  color: var(--muted-color);
+  border-radius: var(--border-radius);
+}
+
+.MenuControl-previewItem.is-highlight {
+  --menu-control-color: var(--menu-control-highlight, var(--primary-color));
+  color: var(--menu-control-color);
+  font-weight: bold;
+  background: color-mix(in srgb, var(--menu-control-color) 14%, transparent);
+}
+
+.MenuControl-previewIcon {
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.MenuControl-previewSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.MenuControl-previewSeparator {
+  border-top: 1px solid var(--control-bg);
+  margin: 8px 0;
+}
+
+.MenuControl-previewEmpty {
+  font-size: 12px;
+  color: var(--muted-color);
+}
+
+@media @tablet, @phone {
+  .MenuControl-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // Under the list on narrow screens, where it can no longer sit beside it.
+  .MenuControl-preview {
+    position: static;
   }
 }
 

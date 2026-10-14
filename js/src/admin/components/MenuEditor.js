@@ -6,6 +6,8 @@ import Switch from 'flarum/common/components/Switch';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import classList from 'flarum/common/utils/classList';
 import { SCAN_PARAM, SCAN_MESSAGE } from '../../common/keys';
+import IconPicker from './IconPicker';
+import SidebarPreview from './SidebarPreview';
 
 const t = (key, params) => app.translator.trans(`ernestdefoe-menu-control.admin.${key}`, params);
 
@@ -123,13 +125,25 @@ export default class MenuEditor extends Component {
 
         {this.scanFailed ? <div className="MenuControl-scanning">{t('scan_failed')}</div> : null}
 
-        <ul className="MenuControl-list" oncreate={(vnode) => ((this.list = vnode.dom), this.makeSortable())}>
-          {this.items.map((item, index) => this.row(item, index))}
-        </ul>
+        <div className="MenuControl-layout">
+          <div className="MenuControl-main">
+            <ul className="MenuControl-list" oncreate={(vnode) => ((this.list = vnode.dom), this.makeSortable())}>
+              {this.items.map((item, index) => this.row(item, index))}
+            </ul>
 
-        <Button className="Button MenuControl-add" icon="fas fa-plus" onclick={() => this.addLink()}>
-          {t('add_link')}
-        </Button>
+            <Button className="Button MenuControl-add" icon="fas fa-plus" onclick={() => this.addLink()}>
+              {t('add_link')}
+            </Button>
+          </div>
+
+          <SidebarPreview
+            items={this.items}
+            found={this.scanFailed ? null : this.found}
+            flip={[true, '1', 1].includes(this.attrs.flip?.())}
+            color={/^#[0-9a-f]{3,8}$/i.test(this.attrs.color?.() || '') ? this.attrs.color() : null}
+            valid={normalizeUrl}
+          />
+        </div>
       </div>
     );
   }
@@ -252,9 +266,14 @@ export default class MenuEditor extends Component {
         <div className="MenuControl-field">
           <label>{t('icon_label')}</label>
           <div className="MenuControl-iconInput">
-            <span className="MenuControl-icon">
-              <Icon name={item.icon || (isLink ? 'fas fa-link' : found?.icon) || 'fas fa-question'} />
-            </span>
+            <Button
+              className="Button Button--icon MenuControl-pickerToggle"
+              icon={item.icon || (isLink ? 'fas fa-link' : found?.icon) || 'fas fa-icons'}
+              aria-label={t('picker_open')}
+              title={t('picker_open')}
+              aria-expanded={this.picking === item.key ? 'true' : 'false'}
+              onclick={() => (this.picking = this.picking === item.key ? null : item.key)}
+            />
             <input
               className="FormControl"
               type="text"
@@ -263,6 +282,19 @@ export default class MenuEditor extends Component {
               oninput={(e) => this.update(item, { icon: e.target.value })}
             />
           </div>
+          {this.picking === item.key ? (
+            <IconPicker
+              value={item.icon}
+              onpick={(icon) => {
+                this.update(item, { icon });
+                this.picking = null;
+              }}
+              onclose={() => {
+                this.picking = null;
+                m.redraw();
+              }}
+            />
+          ) : null}
           <div className="helpText">{t('icon_help')}</div>
         </div>
 
