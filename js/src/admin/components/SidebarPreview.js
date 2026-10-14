@@ -19,6 +19,11 @@ export default class SidebarPreview extends Component {
     this.viewer = Group.MEMBER_ID;
   }
 
+  oncreate(vnode) {
+    super.oncreate(vnode);
+    this.attrs.viewAs(this.viewer);
+  }
+
   viewerGroups() {
     if (this.viewer === Group.GUEST_ID) return [Number(Group.GUEST_ID)];
     if (this.viewer === Group.MEMBER_ID) return [Number(Group.MEMBER_ID)];
@@ -26,15 +31,21 @@ export default class SidebarPreview extends Component {
   }
 
   view() {
-    const { items, found, flip, color, valid } = this.attrs;
+    const { items, found, views, flip, color, valid } = this.attrs;
     const groups = this.viewerGroups();
+
+    // What this group's own sidebar holds, before any of our changes: other
+    // extensions decide that from the group's permissions. Until it arrives
+    // (or if it can't be read), fall back to the admin's own sidebar.
+    const view = views[this.viewer];
+    const seen = view && typeof view === 'object' ? view : found;
 
     const visible = items.filter((item) => {
       if (item.hidden) return false;
-      if ('url' in item ? !valid(item.url) : found && !found[item.key]) return false;
+      if ('url' in item ? !valid(item.url) : seen && !seen[item.key]) return false;
       // An item that renders nothing right now (a "live now" badge, say) is
       // empty on the forum too.
-      if (!('url' in item) && found && !item.label && !found[item.key].label && !found[item.key].icon) return false;
+      if (!('url' in item) && seen && !item.label && !seen[item.key].label && !seen[item.key].icon) return false;
       return !(item.groups || []).length || item.groups.some((id) => groups.includes(Number(id)));
     });
 
@@ -81,9 +92,18 @@ export default class SidebarPreview extends Component {
           <span className="MenuControl-previewTitle">{t('preview_title')}</span>
           <label className="MenuControl-previewViewer">
             {t('preview_view_as')}
-            <Select value={this.viewer} options={options} onchange={(value) => (this.viewer = value)} />
+            <Select
+              value={this.viewer}
+              options={options}
+              onchange={(value) => {
+                this.viewer = value;
+                this.attrs.viewAs(value);
+              }}
+            />
           </label>
         </div>
+        {view === 'loading' ? <div className="MenuControl-previewNote">{t('preview_loading', { group: options[this.viewer] })}</div> : null}
+        {view === 'failed' ? <div className="MenuControl-previewNote">{t('preview_failed')}</div> : null}
         <div className="MenuControl-previewStart">
           <Icon name="fas fa-edit" /> {t('preview_start')}
         </div>

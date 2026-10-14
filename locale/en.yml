@@ -43,6 +43,8 @@ ernestdefoe-menu-control:
     preview_members: Members
     preview_start: => core.ref.start_a_discussion
     preview_empty: Nothing to show for this group.
+    preview_loading: "Reading the sidebar as {group}…"
+    preview_failed: "This group's sidebar couldn't be read, so items other extensions show only to some people may be listed here too."
     flip_label: Show tags above the menu items
     flip_help: Puts the tag list at the top of the sidebar, with All Discussions, Following and the rest beneath it.
     sticky_label: Keep the sidebar in view while scrolling

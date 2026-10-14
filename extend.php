@@ -1,5 +1,6 @@
 <?php
 
+use Ernestdefoe\MenuControl\Api\ViewAsController;
 use Ernestdefoe\MenuControl\MenuConfig;
 use Flarum\Api\Context;
 use Flarum\Api\Resource\ForumResource;
@@ -16,6 +17,9 @@ return [
         ->css(__DIR__.'/less/admin.less'),
 
     new Extend\Locales(__DIR__.'/locale'),
+
+    (new Extend\Routes('api'))
+        ->get('/menu-control/view-as', 'menu-control.view-as', ViewAsController::class),
 
     (new Extend\Settings())
         ->default(MenuConfig::ITEMS, '[]')

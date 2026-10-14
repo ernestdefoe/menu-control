@@ -5,7 +5,7 @@ import Icon from 'flarum/common/components/Icon';
 import Switch from 'flarum/common/components/Switch';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import classList from 'flarum/common/utils/classList';
-import { SCAN_PARAM, SCAN_MESSAGE } from '../../common/keys';
+import { SCAN_PARAM, AS_PARAM, SCAN_MESSAGE } from '../../common/keys';
 import IconPicker from './IconPicker';
 import SidebarPreview from './SidebarPreview';
 
@@ -47,6 +47,8 @@ export default class MenuEditor extends Component {
 
     this.items = parse(this.attrs.stream());
     this.found = null; // key → { label, icon } once the scan reports
+    this.views = {}; // group id → the same, as that group sees it; 'loading' or 'failed' meanwhile
+    this.viewFrames = new Map(); // frame window → group id
     this.open = null;
 
     this.onmessage = this.onmessage.bind(this);
@@ -61,16 +63,62 @@ export default class MenuEditor extends Component {
 
   onremove() {
     window.removeEventListener('message', this.onmessage);
+    document.querySelectorAll('.MenuControl-frame').forEach((frame) => (clearTimeout(frame._menuControlTimeout), frame.remove()));
     clearTimeout(this.scanTimeout);
     this.sortableInstance?.destroy();
   }
 
   onmessage(event) {
-    if (event.origin !== window.location.origin || event.source !== this.frame?.contentWindow || event.data?.type !== SCAN_MESSAGE) return;
+    if (event.origin !== window.location.origin || event.data?.type !== SCAN_MESSAGE) return;
 
     const found = {};
     (event.data.items || []).forEach((item) => (found[item.key] = item));
-    this.finishScan(found);
+
+    if (event.source === this.frame?.contentWindow) return this.finishScan(found);
+
+    const group = this.viewFrames.get(event.source);
+    if (group !== undefined) this.finishView(group, event.data.failed ? 'failed' : found);
+  }
+
+  /**
+   * Read the sidebar as a member of one group would see it, in a hidden
+   * frame of its own. Admins are the scan already made.
+   */
+  viewAs(group) {
+    if (this.views[group]) return;
+
+    if (group === '1' && this.found) {
+      this.views[group] = this.scanFailed ? 'failed' : this.found;
+      return;
+    }
+
+    this.views[group] = 'loading';
+
+    const frame = document.createElement('iframe');
+    frame.className = 'MenuControl-frame';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.tabIndex = -1;
+    frame.src = app.forum.attribute('baseUrl') + '/?' + SCAN_PARAM + '=1&' + AS_PARAM + '=' + encodeURIComponent(group);
+    document.body.appendChild(frame);
+
+    this.viewFrames.set(frame.contentWindow, group);
+    frame._menuControlTimeout = setTimeout(() => this.finishView(group, 'failed'), 20000);
+    frame._menuControlGroup = group;
+  }
+
+  finishView(group, result) {
+    if (this.views[group] !== 'loading') return;
+
+    this.views[group] = result;
+
+    document.querySelectorAll('.MenuControl-frame').forEach((frame) => {
+      if (frame._menuControlGroup !== group) return;
+      clearTimeout(frame._menuControlTimeout);
+      this.viewFrames.delete(frame.contentWindow);
+      frame.remove();
+    });
+
+    m.redraw();
   }
 
   finishScan(found, failed = false) {
@@ -139,6 +187,8 @@ export default class MenuEditor extends Component {
           <SidebarPreview
             items={this.items}
             found={this.scanFailed ? null : this.found}
+            views={this.views}
+            viewAs={(group) => this.viewAs(group)}
             flip={[true, '1', 1].includes(this.attrs.flip?.())}
             color={/^#[0-9a-f]{3,8}$/i.test(this.attrs.color?.() || '') ? this.attrs.color() : null}
             valid={normalizeUrl}
