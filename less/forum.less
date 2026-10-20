@@ -1,12 +1,26 @@
 @media @desktop-up {
-  // Follows the page while it scrolls, under the fixed header.
+  // Follows the page while it scrolls, below the header (and the ESPN ticker's
+  // lower edge when it sits on top). Core's own sticky parts read
+  // --header-height too, so a theme that changes the header is followed.
   .Page-sidebar .IndexPage-nav.MenuControl--sticky {
+    --menu-control-top: ~"calc(max(var(--header-height), var(--cfb-ticker-bottom, 0px)) + 20px)";
     position: sticky;
-    top: calc(@header-height + 20px);
-    max-height: calc(100vh - @header-height - 40px);
-    overflow-y: auto;
+    top: var(--menu-control-top);
+    max-height: ~"calc(100vh - var(--menu-control-top) - var(--menu-control-bottom, 20px))";
+    // A long list scrolls by wheel, touch and keyboard focus, with no bar.
+    // A bar would also take its width from the nav, whose list is sized to the
+    // whole column, so the list overflowed sideways and a second bar appeared.
+    overflow: hidden auto;
     overscroll-behavior: contain;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .has-cfb-ticker-bottom .Page-sidebar .IndexPage-nav.MenuControl--sticky {
+    --menu-control-bottom: 56px;
   }
 }
 
