@@ -85,6 +85,17 @@ class MenuControlTest extends TestCase
         $this->assertNull($menu['items'][5]['icon'], 'an icon that is not a Font Awesome class is dropped');
         $this->assertSame('Watching <b>', $menu['items'][0]['label'], 'labels are text; the browser escapes them');
         $this->assertNull($menu['highlightColor']);
+        $this->assertFalse($menu['stickyFollow'], 'a long sticky sidebar scrolls inside itself by default');
+    }
+
+    #[Test]
+    public function a_long_sticky_sidebar_can_follow_the_page_instead(): void
+    {
+        $this->store(MenuConfig::STICKY_LONG, 'page');
+        $this->assertTrue($this->menuFor(null)['stickyFollow']);
+
+        $this->store(MenuConfig::STICKY_LONG, 'anything else');
+        $this->assertFalse($this->menuFor(null)['stickyFollow']);
     }
 
     #[Test]

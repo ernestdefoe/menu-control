@@ -18,6 +18,7 @@ class MenuConfig
     public const ITEMS = 'ernestdefoe-menu-control.items';
     public const FLIP = 'ernestdefoe-menu-control.flip';
     public const STICKY = 'ernestdefoe-menu-control.sticky';
+    public const STICKY_LONG = 'ernestdefoe-menu-control.sticky_long';
     public const HIGHLIGHT_COLOR = 'ernestdefoe-menu-control.highlight_color';
 
     private const MAX_ITEMS = 100;
@@ -28,7 +29,7 @@ class MenuConfig
     }
 
     /**
-     * @return array{items: list<array<string, mixed>>, hide: list<string>, flip: bool, sticky: bool, highlightColor: string|null}
+     * @return array{items: list<array<string, mixed>>, hide: list<string>, flip: bool, sticky: bool, stickyFollow: bool, highlightColor: string|null}
      */
     public function forActor(User $actor): array
     {
@@ -64,6 +65,9 @@ class MenuConfig
             'hide' => $hide,
             'flip' => (bool) $this->settings->get(self::FLIP),
             'sticky' => (bool) $this->settings->get(self::STICKY),
+            // A sidebar taller than the window: scroll inside it (the default),
+            // or move with the page until its end shows, then stay in view.
+            'stickyFollow' => $this->settings->get(self::STICKY_LONG) === 'page',
             'highlightColor' => preg_match('/^#[0-9a-f]{3,8}$/i', $color) ? $color : null,
         ];
     }

@@ -32,6 +32,7 @@ return [
         ->default(MenuConfig::ITEMS, '[]')
         ->default(MenuConfig::FLIP, false)
         ->default(MenuConfig::STICKY, false)
+        ->default(MenuConfig::STICKY_LONG, 'scroll')
         ->default(MenuConfig::HIGHLIGHT_COLOR, ''),
 
     // One attribute, already resolved for the person asking: items they may

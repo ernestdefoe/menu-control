@@ -35,6 +35,17 @@ export default [
     )
     .setting(
       () => ({
+        setting: 'ernestdefoe-menu-control.sticky_long',
+        type: 'select',
+        label: t('sticky_long_label'),
+        help: t('sticky_long_help'),
+        options: { scroll: t('sticky_long_scroll'), page: t('sticky_long_page') },
+        default: 'scroll',
+      }),
+      75
+    )
+    .setting(
+      () => ({
         setting: 'ernestdefoe-menu-control.highlight_color',
         type: 'color-preview',
         label: t('highlight_color_label'),

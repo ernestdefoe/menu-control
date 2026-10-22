@@ -6,8 +6,12 @@
     --menu-control-top: ~"calc(max(var(--header-height), var(--cfb-ticker-bottom, 0px)) + 20px)";
     position: sticky;
     top: var(--menu-control-top);
+  }
+
+  // A long list scrolls inside the sidebar, by wheel, touch and keyboard
+  // focus, with no bar. (With "follow the page", the page scrolls it instead.)
+  .Page-sidebar .IndexPage-nav.MenuControl--sticky:not(.MenuControl--follow) {
     max-height: ~"calc(100vh - var(--menu-control-top) - var(--menu-control-bottom, 20px))";
-    // A long list scrolls by wheel, touch and keyboard focus, with no bar.
     // A bar would also take its width from the nav, whose list is sized to the
     // whole column, so the list overflowed sideways and a second bar appeared.
     overflow: hidden auto;
@@ -17,6 +21,19 @@
     &::-webkit-scrollbar {
       display: none;
     }
+  }
+
+  // "Follow the page" (follow.js): the gap that re-anchors it, and no scroll
+  // anchoring on it, or moving it would make the browser scroll the page.
+  .Page-sidebar:has(> .MenuControl--follow)::before,
+  .Page-sidebar :has(> .MenuControl--follow)::before {
+    content: '';
+    display: block;
+    height: var(--menu-control-space, 0px);
+  }
+
+  .Page-sidebar .IndexPage-nav.MenuControl--follow {
+    overflow-anchor: none;
   }
 
   .has-cfb-ticker-bottom .Page-sidebar .IndexPage-nav.MenuControl--sticky {

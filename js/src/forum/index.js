@@ -3,6 +3,7 @@ import { extend } from 'flarum/common/extend';
 import IndexSidebar from 'flarum/forum/components/IndexSidebar';
 import LinkButton from 'flarum/common/components/LinkButton';
 import extractText from 'flarum/common/utils/extractText';
+import follow from './follow';
 import { isTagEntry, SCAN_PARAM, AS_PARAM, SCAN_MESSAGE } from '../common/keys';
 
 // Keys in render order. toArray() would hand back null for an empty item.
@@ -121,12 +122,22 @@ function decorate(vnode) {
   const config = app.forum.attribute('menuControl');
   if (!config || !vnode?.attrs) return;
 
-  if (config.sticky) vnode.attrs.className = (vnode.attrs.className || '') + ' MenuControl--sticky';
+  if (config.sticky)
+    vnode.attrs.className = (vnode.attrs.className || '') + ' MenuControl--sticky' + (config.stickyFollow ? ' MenuControl--follow' : '');
   if (config.highlightColor) vnode.attrs.style = { '--menu-control-highlight': config.highlightColor };
 }
 
 app.initializers.add('ernestdefoe-menu-control', () => {
   extend(IndexSidebar.prototype, 'view', decorate);
+
+  // A long sidebar that follows the page needs to know which way it scrolls.
+  extend(IndexSidebar.prototype, 'oncreate', function (vnode) {
+    const config = app.forum.attribute('menuControl');
+    if (config?.sticky && config.stickyFollow) this.menuControlFollow = follow(vnode.dom);
+  });
+  extend(IndexSidebar.prototype, 'onremove', function () {
+    this.menuControlFollow?.();
+  });
 
   // Registered just before the app mounts — after every extension's
   // initializer, whatever its priority — so every item already exists when
