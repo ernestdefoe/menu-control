@@ -13,7 +13,7 @@
 // most.
 export default function follow(el) {
   let mode = 'top'; // 'top' = the stylesheet's own sticky top; 'down'; 'up'
-  let lastY, lastTop;
+  let lastY;
   let pin = 0; // the stylesheet's top offset, read when the way up began
   // Phones and tablets get no sticky sidebar, so nothing to follow there.
   let active = false;
@@ -54,12 +54,8 @@ export default function follow(el) {
     const step = y - lastY;
     if (!step || !active) return;
     const down = step > 0;
-    const rect = el.getBoundingClientRect();
-    // Where it would be now had it moved with the page through this step:
-    // until this event it was held by its old sticky edge.
-    const owed = lastTop - step;
     lastY = y;
-    lastTop = rect.top;
+    const rect = el.getBoundingClientRect();
 
     // Scrolling the way it already follows needs nothing, except on the way
     // up, where it hands back to the plain sticky top once its top shows (so
@@ -71,24 +67,28 @@ export default function follow(el) {
     // Held at the top, it only needs to follow down once its end is cut off.
     if (mode === 'top' && (!down || rect.bottom <= window.innerHeight)) return;
 
+    // Where it would be now had it moved with the page through this step,
+    // rather than being held by its old sticky edge: in flow, or that edge
+    // moved by the step, whichever the old edge allowed.
+    const edge = mode === 'up' ? pin : parseFloat(getComputedStyle(el).top);
     const m = measure();
-    const gap = Math.min(Math.max(0, owed - m.base), m.room);
+    const flow = m.base + (parseFloat(column.style.getPropertyValue('--menu-control-space')) || 0);
+    const at = mode === 'up' ? Math.min(flow, edge - step) : Math.max(flow, edge - step);
+    const gap = Math.min(Math.max(0, at - m.base), m.room);
 
     if (m.height + m.top + m.bottom <= window.innerHeight) set('top');
     else if (down) set('down', window.innerHeight - m.height - m.bottom + 'px', '', gap);
-    else if (owed >= m.top) set('top');
+    else if (at >= m.top) set('top');
     else {
       pin = m.top;
       set('up', 'auto', window.innerHeight - m.top - m.height + 'px', gap);
     }
-    lastTop = el.getBoundingClientRect().top;
   };
 
   const reset = () => {
     set('top');
     active = getComputedStyle(el).position === 'sticky';
     lastY = window.scrollY;
-    lastTop = el.getBoundingClientRect().top;
   };
   reset();
 
