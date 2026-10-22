@@ -131,9 +131,9 @@ app.initializers.add('ernestdefoe-menu-control', () => {
   extend(IndexSidebar.prototype, 'view', decorate);
 
   // A long sidebar that follows the page needs to know which way it scrolls.
-  extend(IndexSidebar.prototype, 'oncreate', function (vnode) {
+  extend(IndexSidebar.prototype, 'oncreate', function () {
     const config = app.forum.attribute('menuControl');
-    if (config?.sticky && config.stickyFollow) this.menuControlFollow = follow(vnode.dom);
+    if (config?.sticky && config.stickyFollow) this.menuControlFollow = follow(this.element);
   });
   extend(IndexSidebar.prototype, 'onremove', function () {
     this.menuControlFollow?.();
