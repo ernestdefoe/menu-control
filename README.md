@@ -16,7 +16,7 @@ A [Flarum 2](https://flarum.org) extension that gives you full control of the fo
 - **Custom links.** Add links to pages on your forum or to other sites. A plain address like `example.com/page` works too. You can reorder, rename, highlight and restrict them like any other item. External links open in a new tab by default, and you can change that for each link.
 - **Choose who sees each item.** Show an item only to certain groups: guests, members, staff, or any group you've made. Restricted links are never sent to people who can't see them.
 - **Tags first.** You can put the tag list above the menu items.
-- **Sticky sidebar.** The sidebar, including the Start a Discussion button, can stay in view as people scroll. A sidebar taller than the window either scrolls inside itself, or scrolls with the page until its end shows and then stays (scrolling back up brings its top back the same way). Desktop only.
+- **Sticky sidebar.** The sidebar, including the Start a Discussion button and anything other extensions place beside it (such as FoF Forum Widgets' start sections), can stay in view as people scroll. A sidebar taller than the window either scrolls inside itself, or scrolls with the page until its end shows and then stays (scrolling back up brings its top back the same way). Desktop only.
 - **Works wherever the sidebar is shown,** including the tags page and other extensions' pages that reuse it.
 - **Preview before you save.** A live sidebar preview updates with every change. Choose **View as** to see it as guests, members or any group sees it.
 - **Picks up new items by itself.** The admin page reads your real sidebar, so items from extensions you install later appear without any setup.

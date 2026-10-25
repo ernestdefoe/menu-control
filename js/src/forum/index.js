@@ -1,9 +1,10 @@
 import app from 'flarum/forum/app';
 import { extend } from 'flarum/common/extend';
 import IndexSidebar from 'flarum/forum/components/IndexSidebar';
+import PageStructure from 'flarum/forum/components/PageStructure';
+import wrapSidebar from './wrapSidebar';
 import LinkButton from 'flarum/common/components/LinkButton';
 import extractText from 'flarum/common/utils/extractText';
-import follow from './follow';
 import { isTagEntry, SCAN_PARAM, AS_PARAM, SCAN_MESSAGE } from '../common/keys';
 
 // Keys in render order. toArray() would hand back null for an empty item.
@@ -116,34 +117,23 @@ function apply(items) {
   }
 }
 
-// Sticky and the highlight colour ride on the sidebar element itself, so they
-// follow it to every page that renders one.
+// The highlight colour rides on the sidebar element itself, so it follows it
+// to every page that renders one.
 function decorate(vnode) {
-  const config = app.forum.attribute('menuControl');
-  if (!config || !vnode?.attrs) return;
-
-  if (config.sticky)
-    vnode.attrs.className = (vnode.attrs.className || '') + ' MenuControl--sticky' + (config.stickyFollow ? ' MenuControl--follow' : '');
-  if (config.highlightColor) vnode.attrs.style = { '--menu-control-highlight': config.highlightColor };
+  const color = app.forum.attribute('menuControl')?.highlightColor;
+  if (color && vnode?.attrs) vnode.attrs.style = { '--menu-control-highlight': color };
 }
 
 app.initializers.add('ernestdefoe-menu-control', () => {
   extend(IndexSidebar.prototype, 'view', decorate);
-
-  // A long sidebar that follows the page needs to know which way it scrolls.
-  extend(IndexSidebar.prototype, 'oncreate', function () {
-    const config = app.forum.attribute('menuControl');
-    if (config?.sticky && config.stickyFollow) this.menuControlFollow = follow(this.element);
-  });
-  extend(IndexSidebar.prototype, 'onremove', function () {
-    this.menuControlFollow?.();
-  });
 
   // Registered just before the app mounts — after every extension's
   // initializer, whatever its priority — so every item already exists when
   // this runs. (The blog's initializer runs at -100000.)
   app.beforeMount(() => {
     extend(IndexSidebar.prototype, 'navItems', apply);
+    // Last of all, so it wraps the items every extension has added.
+    extend(PageStructure.prototype, 'sidebarItems', wrapSidebar);
 
     scanner = scanning && !!app.session.user?.isAdmin();
     if (scanner && viewAs) setTimeout(() => scanAs(viewAs));

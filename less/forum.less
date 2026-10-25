@@ -1,19 +1,24 @@
 @media @desktop-up {
-  // Follows the page while it scrolls, below the header (and the ESPN ticker's
+  // The whole sidebar column (the nav and anything placed beside it) follows
+  // the page while it scrolls, below the header (and the ESPN ticker's
   // lower edge when it sits on top). Core's own sticky parts read
   // --header-height too, so a theme that changes the header is followed.
-  .Page-sidebar .IndexPage-nav.MenuControl--sticky {
+  .Page-sidebar > .MenuControl--sticky {
     --menu-control-top: ~"calc(max(var(--header-height), var(--cfb-ticker-bottom, 0px)) + 20px)";
     position: sticky;
     top: var(--menu-control-top);
+    // Holds its children's margins, so its box is all of them (follow.js
+    // measures it) and a last margin can't reach past the column's end.
+    display: flow-root;
   }
 
   // A long list scrolls inside the sidebar, by wheel, touch and keyboard
   // focus, with no bar. (With "follow the page", the page scrolls it instead.)
-  .Page-sidebar .IndexPage-nav.MenuControl--sticky:not(.MenuControl--follow) {
+  .Page-sidebar > .MenuControl--sticky:not(.MenuControl--follow) {
     max-height: ~"calc(100vh - var(--menu-control-top) - var(--menu-control-bottom, 20px))";
-    // A bar would also take its width from the nav, whose list is sized to the
-    // whole column, so the list overflowed sideways and a second bar appeared.
+    // A bar would also take its width from this box, while the nav inside is
+    // sized to the whole column, so it overflowed sideways and a second bar
+    // appeared.
     overflow: hidden auto;
     overscroll-behavior: contain;
     scrollbar-width: none;
@@ -25,18 +30,17 @@
 
   // "Follow the page" (follow.js): the gap that re-anchors it, and no scroll
   // anchoring on it, or moving it would make the browser scroll the page.
-  .Page-sidebar:has(> .MenuControl--follow)::before,
-  .Page-sidebar :has(> .MenuControl--follow)::before {
+  .Page-sidebar:has(> .MenuControl--follow)::before {
     content: '';
     display: block;
     height: var(--menu-control-space, 0px);
   }
 
-  .Page-sidebar .IndexPage-nav.MenuControl--follow {
+  .Page-sidebar > .MenuControl--follow {
     overflow-anchor: none;
   }
 
-  .has-cfb-ticker-bottom .Page-sidebar .IndexPage-nav.MenuControl--sticky {
+  .has-cfb-ticker-bottom .Page-sidebar > .MenuControl--sticky {
     --menu-control-bottom: 56px;
   }
 }
