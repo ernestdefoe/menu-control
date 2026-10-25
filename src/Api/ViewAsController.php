@@ -66,6 +66,16 @@ class ViewAsController implements RequestHandlerInterface
             return new JsonResponse(['errors' => [['status' => '500', 'code' => 'preview_unavailable']]], 500);
         }
 
-        return new JsonResponse(['attributes' => $attributes, 'guest' => $actor->isGuest()]);
+        // The tags this group's sidebar lists: flarum/tags includes exactly
+        // those in the forum payload, already filtered by its own visibility.
+        $tags = [];
+
+        foreach ($body['included'] ?? [] as $resource) {
+            if (($resource['type'] ?? null) === 'tags') {
+                $tags[] = (string) $resource['id'];
+            }
+        }
+
+        return new JsonResponse(['attributes' => $attributes, 'guest' => $actor->isGuest(), 'tags' => $tags]);
     }
 }

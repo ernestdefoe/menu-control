@@ -49,9 +49,12 @@ export default class SidebarPreview extends Component {
       return !(item.groups || []).length || item.groups.some((id) => groups.includes(Number(id)));
     });
 
+    // Tags too follow the group: only those its own sidebar lists.
+    const tagIds = this.attrs.viewTags?.[this.viewer];
+
     const tags = app.store
       .all('tags')
-      .filter((tag) => tag.position() !== null && !tag.isChild())
+      .filter((tag) => tag.position() !== null && !tag.isChild() && (!tagIds || tagIds.includes(tag.id())))
       .sort((a, b) => a.position() - b.position())
       .slice(0, 4);
 

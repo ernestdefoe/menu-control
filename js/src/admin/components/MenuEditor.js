@@ -48,6 +48,7 @@ export default class MenuEditor extends Component {
     this.items = parse(this.attrs.stream());
     this.found = null; // key → { label, icon } once the scan reports
     this.views = {}; // group id → the same, as that group sees it; 'loading' or 'failed' meanwhile
+    this.viewTags = {}; // group id → ids of the tags that group's sidebar lists
     this.viewFrames = new Map(); // frame window → group id
     this.open = null;
 
@@ -77,7 +78,9 @@ export default class MenuEditor extends Component {
     if (event.source === this.frame?.contentWindow) return this.finishScan(found);
 
     const group = this.viewFrames.get(event.source);
-    if (group !== undefined) this.finishView(group, event.data.failed ? 'failed' : found);
+    if (group === undefined) return;
+    if (Array.isArray(event.data.tags)) this.viewTags[group] = event.data.tags;
+    this.finishView(group, event.data.failed ? 'failed' : found);
   }
 
   /**
@@ -188,6 +191,7 @@ export default class MenuEditor extends Component {
             items={this.items}
             found={this.scanFailed ? null : this.found}
             views={this.views}
+            viewTags={this.viewTags}
             viewAs={(group) => this.viewAs(group)}
             flip={[true, '1', 1].includes(this.attrs.flip?.())}
             color={/^#[0-9a-f]{3,8}$/i.test(this.attrs.color?.() || '') ? this.attrs.color() : null}

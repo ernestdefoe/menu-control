@@ -21,6 +21,8 @@ const viewAs = scanning ? params.get(AS_PARAM) : null;
 // "view as" stand-in has taken its place.
 let scanner = false;
 let held = !!viewAs;
+// The tags that group's sidebar lists; this frame's store holds the admin's.
+let viewTags = null;
 
 // Report the sidebar exactly as every other extension left it, before any of
 // our changes, so the admin page can list items it has never been told about.
@@ -34,7 +36,7 @@ function report(items) {
       return { key, label: extractText(vnode?.children ?? '').trim(), icon: vnode?.attrs?.icon || null };
     });
 
-  window.parent.postMessage({ type: SCAN_MESSAGE, as: viewAs, items: found }, window.location.origin);
+  window.parent.postMessage({ type: SCAN_MESSAGE, as: viewAs, items: found, tags: viewTags }, window.location.origin);
 }
 
 // Read the sidebar again as a member of one group: the forum's attributes as
@@ -43,8 +45,9 @@ function report(items) {
 function scanAs(group) {
   app
     .request({ method: 'GET', url: app.forum.attribute('apiUrl') + '/menu-control/view-as?group=' + encodeURIComponent(group) })
-    .then(({ attributes, guest }) => {
+    .then(({ attributes, guest, tags }) => {
       app.forum.pushAttributes(attributes);
+      viewTags = tags || null;
       app.session.user = guest
         ? null
         : app.store.pushObject({
